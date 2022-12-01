@@ -11,7 +11,7 @@ from nltk.tokenize import word_tokenize
 
 
 # if the node is an end of a word, the isEnd attribute shoule be True
-# moreover, it should has only one child which is an external node whose len(self.htmls) > 0
+# it should has only one child node, and the child node is an external node whose len(self.htmls) > 0
 class Node():
     def __init__(self):
         self.value = {} # the node of a compressed trie may store a string rather than a char
@@ -25,6 +25,13 @@ class Trie():
         self.root = Node()
 
     def insert(self, word, fileName):
+        """
+        4 cases:
+        case 1: A brandnew word
+        case 2: A word with common prefix with an existing word
+        case 3: A word extending an existing word
+        case 4: A word as same as an existing word
+        """
         currNode = self.root
         i = 0
 
@@ -34,9 +41,11 @@ class Trie():
         if i < len(word):
             currNode.value[word[i]] = word[i:]
             currNode.isEnd = True
+
+            # create an external node as the child node
             child = Node()
             child.htmls[fileName] += 1
-            currNode.children[word[i]] = child
+            currNode.children[word] = child
 
         return
 
