@@ -11,7 +11,7 @@ from nltk.tokenize import word_tokenize
 
 
 # if the node is an end of a word, the isEnd attribute shoule be True
-# it should has only one child node, and the child node is an external node whose len(self.htmls) > 0
+# it should has at least one child node that is an external node whose len(self.htmls) > 0
 class Node():
     def __init__(self):
         self.value = {} # the node of a compressed trie may store a string rather than a char
@@ -36,8 +36,19 @@ class Trie():
         i = 0
 
         while i < len(word) and word[i] in currNode.value:
-            continue
+            j = 0
+            value = currNode.value[word[i]]
 
+            while j < len(value) and i < len(word) and value[j] == word[i]:
+                i += 1
+                j += 1
+            
+            # # case 4
+            # if j == len(value) and i == len(word):
+            #     currNode = 
+
+
+        # case 1
         if i < len(word):
             currNode.value[word[i]] = word[i:]
             currNode.isEnd = True
