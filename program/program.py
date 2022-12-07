@@ -68,24 +68,24 @@ class Trie():
                     # down the trie and update the current node
                     currNode = currNode.children[remainString[0]]
                 else:
-                    # if not, create a new child internal node with the remaining
+                    # if not, create a new endChild node with the remaining
                     # unmatched string and the external node, then break the loop
                     remainString = word[i:]
                     currNode.children[remainString[0]] = self.createEndChildNode(word, remainString, fileName)
                     break
-            elif (j < len(value) and i == len(value)):
-                # case 3, the matched word ends but the current node's value not yet
+            elif (j < len(value) and i == len(word)):
+                # case 3, the matched word ends but the current node's value not yet.
                 # it means the word is a new word ending at the current node
                 # we need to:
                 # (1) divide the current node's value
-                preString = value[:j]
-                postString = value[j:]
-                # (2) update the current node's value to be divided preString, isEnd = True
-                currNode.value[firstLetter] = preString
+                matched = value[:j]
+                unmatched = value[j:]
+                # (2) update the current node's value to be divided matched, isEnd = True
+                currNode.value[firstLetter] = matched
                 currNode.isEnd = True
-                # (3) create a new child node with the value as postString
+                # (3) create a new child node with the value as unmatched
                 newChild = Node()
-                newChild.value[postString[0]] = postString
+                newChild.value[unmatched[0]] = unmatched
                 # (4) move the current node's children to be the newChild's children
                 newChild.children = currNode.children
                 # (5) create a new external node for the word
@@ -93,23 +93,29 @@ class Trie():
                 # (6) update the current node's children
                 currNode.children = {}
                 currNode.children[word] = newExternal
-                currNode.children[postString[0]] = newChild
+                currNode.children[unmatched[0]] = newChild
                 break
-
-
-
-
-
-
-        # case 1
-        if i < len(word):
-            currNode.value[word[i]] = word[i:]
-            currNode.isEnd = True
-
-            # create an external node as the child node
-            child = Node()
-            child.htmls[fileName] += 1
-            currNode.children[word] = child
+            elif (j < len(value) and i < len(word)):
+                # case 4, both don't end
+                # we need to:
+                # (1) divide the word and the current node's value 
+                matched = value[:j]
+                unmatchedOfValue = value[j:]
+                unmatchedOfWord = word[i:]
+                # (2) update the current node's value to be divided matched
+                currNode.value[firstLetter] = matched
+                # (3) create a new child node with the value as unmatchedOfValue
+                newChild = Node()
+                newChild.value[unmatchedOfValue[0]] = unmatchedOfValue
+                # (4) move the current node's children to be the newChild's children
+                newChild.children = currNode.children
+                # (5) create a new endChild node for the word
+                newEndChild = self.createEndChildNode(word, unmatchedOfWord, fileName)
+                # (6) update the current node's children
+                currNode.children = {}
+                currNode.children[unmatchedOfValue[0]] = newChild
+                currNode.children[unmatchedOfWord[0]] = newEndChild
+                break
 
         return
 
