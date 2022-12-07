@@ -24,14 +24,20 @@ class Trie():
     def __init__(self):
         self.root = Node()
 
+    def createExternalNode(self, fileName):
+        externalNode = Node()
+        externalNode.htmls[fileName] += 1
+        return externalNode
+
+    def createChildNode(self, word, remainString, fileName):
+        child = Node()
+        child.value[remainString[0]] = remainString
+        child.isEnd = True
+        child.children[word] = self.createExternalNode(fileName)
+        return child
+
+
     def insert(self, word, fileName):
-        """
-        4 cases:
-        case 1: A brandnew word
-        case 2: A word with common prefix with an existing word
-        case 3: A word extending an existing word
-        case 4: A word as same as an existing word
-        """
         currNode = self.root
         i = 0
 
@@ -43,9 +49,31 @@ class Trie():
                 i += 1
                 j += 1
             
-            # # case 4
-            # if j == len(value) and i == len(word):
-            #     currNode = 
+            if (j == len(value) and i == len(word)):
+                # case 1, the matched word = current node's value
+                # check the current node's isEnd
+                if currNode.isEnd:
+                    # if True, update the external node's htmls dict
+                    externalNode = currNode.children[word]
+                    externalNode.htmls[fileName] += 1
+                else:
+                    # if False, create a new external node
+                    currNode.children[word] = self.createExternalNode(fileName)
+            elif (j == len(value) and i < len(word)):
+                # case 2, the current node's value ends but the matched word not yet
+                # check the current node's children
+                if remainString[0] in currNode.children:
+                    # if the first remaining letter is a key in children dict, traverse
+                    # down the trie and update the current node
+                    currNode = currNode.children[remainString[0]]
+                else:
+                    # if not, create a new child internal node with the remaining
+                    # unmatched string and the external node, then break the loop
+                    remainString = word[i:]
+                    currNode.children[remainString[0]] = self.createChild(word, remainString, fileName)
+                    break
+
+
 
 
         # case 1
