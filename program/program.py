@@ -29,7 +29,7 @@ class Trie():
         externalNode.htmls[fileName] += 1
         return externalNode
 
-    def createChildNode(self, word, remainString, fileName):
+    def createEndChildNode(self, word, remainString, fileName):
         child = Node()
         child.value[remainString[0]] = remainString
         child.isEnd = True
@@ -43,7 +43,8 @@ class Trie():
 
         while i < len(word) and word[i] in currNode.value:
             j = 0
-            value = currNode.value[word[i]]
+            firstLetter = word[i]
+            value = currNode.value[firstLetter]
 
             while j < len(value) and i < len(word) and value[j] == word[i]:
                 i += 1
@@ -70,8 +71,32 @@ class Trie():
                     # if not, create a new child internal node with the remaining
                     # unmatched string and the external node, then break the loop
                     remainString = word[i:]
-                    currNode.children[remainString[0]] = self.createChild(word, remainString, fileName)
+                    currNode.children[remainString[0]] = self.createEndChildNode(word, remainString, fileName)
                     break
+            elif (j < len(value) and i == len(value)):
+                # case 3, the matched word ends but the current node's value not yet
+                # it means the word is a new word ending at the current node
+                # we need to:
+                # (1) divide the current node's value
+                preString = value[:j]
+                postString = value[j:]
+                # (2) update the current node's value to be divided preString, isEnd = True
+                currNode.value[firstLetter] = preString
+                currNode.isEnd = True
+                # (3) create a new child node with the value as postString
+                newChild = Node()
+                newChild.value[postString[0]] = postString
+                # (4) move the current node's children to be the newChild's children
+                newChild.children = currNode.children
+                # (5) create a new external node for the word
+                newExternal = self.createExternalNode(fileName)
+                # (6) update the current node's children
+                currNode.children = {}
+                currNode.children[word] = newExternal
+                currNode.children[postString[0]] = newChild
+                break
+
+
 
 
 
