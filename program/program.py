@@ -123,9 +123,37 @@ class Trie():
                 currNode.children[unmatchedOfValue[0]] = newChild
                 currNode.children[unmatchedOfWord[0]] = newEndChild
                 return
-
         return
 
+
+    def search(self, word):
+        currNode = self.root
+        i = 0
+
+        if word[i] in currNode.children:
+            currNode = currNode.children[word[i]]
+        else:
+            return None
+
+        while i < len(word) and word[i] in currNode.value:
+            j = 0
+            firstLetter = word[i]
+            value = currNode.value[firstLetter]
+
+            while j < len(value) and i < len(word) and value[j] == word[i]:
+                i += 1
+                j += 1
+
+            if j < len(value):
+                return None
+            
+            if i == len(word) and word in currNode.children:
+                return currNode.children[word].htmls
+            elif i < len(word) and word[i] in currNode.children:
+                currNode = currNode.children[word[i]]
+            else:
+                return None # the case i == len(word) but there is no word in currNode.children
+        return None
 
 
 def main():
@@ -154,15 +182,15 @@ def main():
             for token in word_tokens:
                 splitted_token = re.split('[^a-zA-Z]', token)
                 for splitted_word in splitted_token:
-                    if splitted_word not in stop_words and len(splitted_word) > 1:
-                        # splitted_token = re.split('[^a-zA-Z]', token)
-                        # for splitted_word in splitted_token:
-                            if splitted_word:
-                                trie.insert(splitted_word.lower(), file)
-                                filtered_text.append(splitted_word.lower())
+                    if splitted_word.lower() not in stop_words and len(splitted_word) > 1:
+                        if splitted_word:
+                            trie.insert(splitted_word.lower(), file)
+                            filtered_text.append(splitted_word.lower())
+            # print(file_path)
+            # print(filtered_text)
 
-            print(file_path)
-            print(filtered_text)
+
+    return
 
 
 if __name__ == '__main__':
