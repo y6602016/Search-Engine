@@ -41,6 +41,12 @@ class Trie():
         currNode = self.root
         i = 0
 
+        if word[0] in currNode.children:
+            currNode = currNode.children[word[0]]
+        else:
+            currNode.children[word[0]] = self.createEndChildNode(word, word, fileName)
+            return
+
         while i < len(word) and word[i] in currNode.value:
             j = 0
             firstLetter = word[i]
@@ -63,16 +69,16 @@ class Trie():
             elif (j == len(value) and i < len(word)):
                 # case 2, the current node's value ends but the matched word not yet
                 # check the current node's children
-                if remainString[0] in currNode.children:
-                    # if the first remaining letter is a key in children dict, traverse
+                unmatched = word[i:]
+                if unmatched[0] in currNode.children:
+                    # if the first unmatched letter is a key in children dict, traverse
                     # down the trie and update the current node
-                    currNode = currNode.children[remainString[0]]
+                    currNode = currNode.children[unmatched[0]]
                 else:
                     # if not, create a new endChild node with the remaining
                     # unmatched string and the external node, then break the loop
-                    remainString = word[i:]
-                    currNode.children[remainString[0]] = self.createEndChildNode(word, remainString, fileName)
-                    break
+                    currNode.children[unmatched[0]] = self.createEndChildNode(word, unmatched, fileName)
+                    return
             elif (j < len(value) and i == len(word)):
                 # case 3, the matched word ends but the current node's value not yet.
                 # it means the word is a new word ending at the current node
@@ -94,7 +100,7 @@ class Trie():
                 currNode.children = {}
                 currNode.children[word] = newExternal
                 currNode.children[unmatched[0]] = newChild
-                break
+                return
             elif (j < len(value) and i < len(word)):
                 # case 4, both don't end
                 # we need to:
@@ -102,8 +108,9 @@ class Trie():
                 matched = value[:j]
                 unmatchedOfValue = value[j:]
                 unmatchedOfWord = word[i:]
-                # (2) update the current node's value to be divided matched
+                # (2) update the current node's value to be divided matched, isEnd = False
                 currNode.value[firstLetter] = matched
+                currNode.isEnd = False
                 # (3) create a new child node with the value as unmatchedOfValue
                 newChild = Node()
                 newChild.value[unmatchedOfValue[0]] = unmatchedOfValue
@@ -115,9 +122,10 @@ class Trie():
                 currNode.children = {}
                 currNode.children[unmatchedOfValue[0]] = newChild
                 currNode.children[unmatchedOfWord[0]] = newEndChild
-                break
+                return
 
         return
+
 
 
 def main():
@@ -144,11 +152,14 @@ def main():
             # after splitting, if the splitted word is not empty, append each splotted word to the filtered text list
             filtered_text = []
             for token in word_tokens:
-                if token not in stop_words:
-                    splitted_token = re.split('[^a-zA-Z]', token)
-                    for splitted_word in splitted_token:
-                        if splitted_word:
-                            filtered_text.append(splitted_word.lower())
+                splitted_token = re.split('[^a-zA-Z]', token)
+                for splitted_word in splitted_token:
+                    if splitted_word not in stop_words and len(splitted_word) > 1:
+                        # splitted_token = re.split('[^a-zA-Z]', token)
+                        # for splitted_word in splitted_token:
+                            if splitted_word:
+                                trie.insert(splitted_word.lower(), file)
+                                filtered_text.append(splitted_word.lower())
 
             print(file_path)
             print(filtered_text)
