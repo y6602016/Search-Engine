@@ -40,7 +40,6 @@ class Trie():
     def insert(self, word, fileName):
         currNode = self.root
         i = 0
-
         if word[0] in currNode.children:
             currNode = currNode.children[word[0]]
         else:
@@ -64,8 +63,9 @@ class Trie():
                     externalNode = currNode.children[word]
                     externalNode.htmls[fileName] += 1
                 else:
-                    # if False, create a new external node
+                    # if False, create a new external node, and isEnd = True
                     currNode.children[word] = self.createExternalNode(fileName)
+                    currNode.isEnd = True
             elif (j == len(value) and i < len(word)):
                 # case 2, the current node's value ends but the matched word not yet
                 # check the current node's children
@@ -86,20 +86,21 @@ class Trie():
                 # (1) divide the current node's value
                 matched = value[:j]
                 unmatched = value[j:]
-                # (2) update the current node's value to be divided matched, isEnd = True
+                # (2) update the current node's value to be divided matched
                 currNode.value[firstLetter] = matched
-                currNode.isEnd = True
                 # (3) create a new child node with the value as unmatched
                 newChild = Node()
                 newChild.value[unmatched[0]] = unmatched
-                # (4) move the current node's children to be the newChild's children
+                # (4) move the current node's children to be the newChild's children, and copy isEnd status
                 newChild.children = currNode.children
+                newChild.isEnd = currNode.isEnd
                 # (5) create a new external node for the word
                 newExternal = self.createExternalNode(fileName)
-                # (6) update the current node's children
+                # (6) update the current node's children, isEnd = True
                 currNode.children = {}
                 currNode.children[word] = newExternal
                 currNode.children[unmatched[0]] = newChild
+                currNode.isEnd = True
                 return
             elif (j < len(value) and i < len(word)):
                 # case 4, both don't end
@@ -108,20 +109,21 @@ class Trie():
                 matched = value[:j]
                 unmatchedOfValue = value[j:]
                 unmatchedOfWord = word[i:]
-                # (2) update the current node's value to be divided matched, isEnd = False
+                # (2) update the current node's value to be divided matched
                 currNode.value[firstLetter] = matched
-                currNode.isEnd = False
                 # (3) create a new child node with the value as unmatchedOfValue
                 newChild = Node()
                 newChild.value[unmatchedOfValue[0]] = unmatchedOfValue
-                # (4) move the current node's children to be the newChild's children
+                # (4) move the current node's children to be the newChild's children, and copy isEnd status
                 newChild.children = currNode.children
+                newChild.isEnd = currNode.isEnd
                 # (5) create a new endChild node for the word
                 newEndChild = self.createEndChildNode(word, unmatchedOfWord, fileName)
-                # (6) update the current node's children
+                # (6) update the current node's children, isEnd = False
                 currNode.children = {}
                 currNode.children[unmatchedOfValue[0]] = newChild
                 currNode.children[unmatchedOfWord[0]] = newEndChild
+                currNode.isEnd = False
                 return
         return
 
@@ -145,15 +147,15 @@ class Trie():
                 j += 1
 
             if j < len(value):
-                return None
+                return {}
             
             if i == len(word) and word in currNode.children:
                 return currNode.children[word].htmls
             elif i < len(word) and word[i] in currNode.children:
                 currNode = currNode.children[word[i]]
             else:
-                return None # the case i == len(word) but there is no word in currNode.children
-        return None
+                return {} # the case i == len(word) but there is no word in currNode.children
+        return {}
 
 
 def main():
@@ -188,7 +190,36 @@ def main():
                             filtered_text.append(splitted_word.lower())
             # print(file_path)
             # print(filtered_text)
+    
+    runProgram = True
+    while runProgram:
+        selection = input("\nEnter 1 to do search\nEnter 2 to end the program\n")
+        if selection == '1':
+            keywords = input("\nPlease enter keywords to search\n!!Please enter multiple keywords with spaces!!\n").split()
+            finalResult = {}
+            for i, keyword in enumerate(keywords):
+                if i == 0:
+                    finalResult = trie.search(keyword)
+                else:
+                    currResult = trie.search(keyword)
+                    preResult = finalResult
+                    finalResult = {}
+                    finalResult = {k : preResult[k] + currResult[k] for k in preResult if k in currResult}
+                
 
+            if not len(finalResult):
+                print("\nYour search did not match any document, please try different keywords\n")
+                continue
+
+            rankedResult = dict(sorted(finalResult.items(), key=lambda item : item[1], reverse=True))
+            print("\nThe search result is:\n")
+            for k, v in rankedResult.items():
+                print("The page '" + k + "' has all keywords with total " + str(v) + " occurence\n")
+
+        elif selection == '2':
+            runProgram = False
+        else:
+            print("\n!!!Please enter 1 or 2!!!\n")
 
     return
 
