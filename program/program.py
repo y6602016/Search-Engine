@@ -135,7 +135,7 @@ class Trie():
         if word[i] in currNode.children:
             currNode = currNode.children[word[i]]
         else:
-            return None
+            return {}
 
         while i < len(word) and word[i] in currNode.value:
             j = 0
@@ -188,8 +188,6 @@ def main():
                         if splitted_word:
                             trie.insert(splitted_word.lower(), file)
                             filtered_text.append(splitted_word.lower())
-            # print(file_path)
-            # print(filtered_text)
     
     runProgram = True
     while runProgram:
@@ -199,9 +197,9 @@ def main():
             finalResult = {}
             for i, keyword in enumerate(keywords):
                 if i == 0:
-                    finalResult = trie.search(keyword)
+                    finalResult = trie.search(keyword.lower())
                 else:
-                    currResult = trie.search(keyword)
+                    currResult = trie.search(keyword.lower())
                     preResult = finalResult
                     finalResult = {}
                     finalResult = {k : preResult[k] + currResult[k] for k in preResult if k in currResult}
