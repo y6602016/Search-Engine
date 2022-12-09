@@ -174,15 +174,15 @@ def main():
 
             # 3. extract all texts from the input html
             all_text = soup.get_text()
-            
+
             # 4. tokenize all extracted texts
             word_tokens = word_tokenize(all_text)
-
+            # print(word_tokens)
             # 5. iterate all tokens, if the token is not a stop word, then it can be splitted by non-alpha
             # after splitting, if the splitted word is not empty, append each splotted word to the filtered text list
             filtered_text = []
             for token in word_tokens:
-                splitted_token = re.split('[^a-zA-Z]', token)
+                splitted_token = re.split('[^a-zA-Z0-9]', token)
                 for splitted_word in splitted_token:
                     if splitted_word.lower() not in stop_words and len(splitted_word) > 1:
                         if splitted_word:
